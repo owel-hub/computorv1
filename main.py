@@ -1,61 +1,47 @@
 import re
 
-testCase1 = "10 * x^0 + 5 * x^1 - 3 * x^2 = 5 * x^0 + 3 * x^1"
-
+testCase1 = "-10 * x^0 + 5 * x^1 - 3 * x^2 = 5 * x^0 + 3 * x^1"
 preinput = testCase1.replace(" ", "").replace("*", "")
 
-zero = one = two = 0
+degree = {
+    "0": 0,
+    "1": 0,
+    "2": 0
+}
 
-def calcu(num, isReverse = 1):
-    global zero, one, two
-
+def calcu(num, sign):
     split = num.split("x^")
-    if split[1] == '0':
-        zero += int(split[0]) * isReverse
-    elif split[1] == '1':
-        one += int(split[0]) * isReverse
-    elif split[1] == '2':
-        two += int(split[0]) * isReverse
+    if len(split) == 1:
+        return
+    for key in degree.keys():
+        if split[1] == key:
+            degree[key] += int(split[0]) * sign
 
 def convert():
-    global zero
-    global one
-    global two
+    for key in degree.keys():
+        num = ""
+        if degree[key] > 0 and key != "0":
+            num += "+"
+        num += str(degree[key])
+        if key != "0":
+            num = num[:1] + " " + num[1:]
+        degree[key] = num
 
-    if zero == 0:
-        zero = ""
-
-    if one == 0:
-        one = ""
-    elif one > 0:
-        one = "+ " + str(one)
-    elif one < 0:
-        one *= -1
-        one = "- " + str(one)
-
-    if two == 0:
-        two = ""
-    elif (two > 0):
-        two = "+ " + str(two)
-    elif two < 0:
-        two *= -1
-        two = "- " + str(two)
-
-tokenIndex = 0
-equalFlag = False
-for index, item in enumerate(preinput):
-    isEnd = 0
-    if re.search("^\\+|-|=$", item) or index == len(preinput) - 1:
-        if index == len(preinput) - 1:
-            isEnd = 1
-        if (equalFlag == True):
-            calcu(preinput[tokenIndex:index + isEnd], -1)
+start = 0
+sign = 1
+for i in range(len(preinput)):
+    if re.search("^\\+|-|=$", preinput[i]) or i == len(preinput) - 1:
+        num = ""
+        if i == len(preinput) - 1:
+            num += preinput[start:i + 1]
         else:
-            calcu(preinput[tokenIndex:index + isEnd])
-        tokenIndex = index
-        if item == '=':
-            equalFlag = True
-            tokenIndex = index + 1
+            num += preinput[start:i]
+        calcu(num, sign)
+        start = i
+
+        if preinput[i] == '=':
+            sign = -1
+            start += 1
 convert()
 
-print(f'\"{zero} * X^0 {one} * X^1 {two} * X^2 = 0\"')
+print(f'\"{degree["0"]} * X^0 {degree["1"]} * X^1 {degree["2"]} * X^2 = 0\"')
