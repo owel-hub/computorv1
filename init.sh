@@ -1,19 +1,17 @@
 #!/bin/sh
 
 execute_computorv1(){
-    count=$1
-    line=$2
-    echo "===== test case #$count =====
-`python main.py $line`
+    echo "===== test case #$1 =====
+`python main.py "$2"`
 `echo`"\
     >> my_output.txt
 }
 
 cat /dev/null > my_output.txt
 
-count=1
+count=0
 cat test_case.txt | while read line
 do
-    execute_computorv1 $count $line
+    execute_computorv1 $count "$line"
     ((count++))
 done
