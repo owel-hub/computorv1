@@ -1,47 +1,63 @@
 import re
+import sys
+import traceback
 
-testCase1 = "-10 * x^0 + 5 * x^1 - 3 * x^2 = 5 * x^0 + 3 * x^1"
-preinput = testCase1.replace(" ", "").replace("*", "")
-
-degree = {
-    "0": 0,
-    "1": 0,
-    "2": 0
-}
-
-def calcu(num, sign):
-    split = num.split("x^")
+def parseConfficient(num, sign):
+    split = num.split("X^")
     if len(split) == 1:
         return
-    for key in degree.keys():
+    for key in dict_degree.keys():
         if split[1] == key:
-            degree[key] += int(split[0]) * sign
+            try:
+                dict_degree[key] += int(split[0]) * sign
+            except:
+                dict_degree[key] += float(split[0]) * sign
 
-def convert():
-    for key in degree.keys():
+def createOutput():
+    for degree in dict_degree.keys():
         num = ""
-        if degree[key] > 0 and key != "0":
+        if dict_degree[degree] >= 0 and degree != "0":
             num += "+"
-        num += str(degree[key])
-        if key != "0":
+        num += str(dict_degree[degree])
+        if degree != "0":
             num = num[:1] + " " + num[1:]
-        degree[key] = num
+        dict_degree[degree] = num
+    print(f'Reduced form: \"{dict_degree["0"]} * X^0 {dict_degree["1"]} * X^1 {dict_degree["2"]} * X^2 = 0\"')
 
-start = 0
-sign = 1
-for i in range(len(preinput)):
-    if re.search("^\\+|-|=$", preinput[i]) or i == len(preinput) - 1:
-        num = ""
-        if i == len(preinput) - 1:
-            num += preinput[start:i + 1]
-        else:
-            num += preinput[start:i]
-        calcu(num, sign)
-        start = i
+def preprocessInput(_input):
+    if len(sys.argv) != 2:
+        raise SyntaxError("Argument error")
+    print(sys.argv)
+    return _input[1].replace(" ", "").replace("*", "")
 
-        if preinput[i] == '=':
-            sign = -1
-            start += 1
-convert()
+def computorv1():
+    global dict_degree
+    dict_degree = {
+        "0": 0,
+        "1": 0,
+        "2": 0
+    }
+    try:
+        _input = preprocessInput(sys.argv);
+        start = 0
+        sign = 1
+        for i in range(len(_input)):
+            if not re.search("^\\+|-|=$", _input[i]) and not i == len(_input) - 1:
+                continue
+            num = ""
+            if i == len(_input) - 1:
+                num += _input[start:i + 1]
+            else:
+                num += _input[start:i]
+            parseConfficient(num, sign)
+            start = i
+            if _input[i] == '=':
+                sign = -1
+                start += 1
+        createOutput()
+    except SyntaxError as error:
+        print(error.args)
 
-print(f'\"{degree["0"]} * X^0 {degree["1"]} * X^1 {degree["2"]} * X^2 = 0\"')
+
+if __name__ == '__main__':
+    computorv1()
